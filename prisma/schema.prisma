@@ -1,16 +1,129 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
-model Note{
-  id String @id @default(uuid())
-  title String
-  content String
+
+model Cashiers {
+  Id        String    @id(map: "PK__Cashiers__3214EC07551C1E46") @default(dbgenerated("newid()"), map: "DF__Cashiers__Id__4F7CD00D") @db.UniqueIdentifier
+  Sequence  String    @db.NVarChar(80)
+  Location  String    @db.NVarChar(150)
+  CreatedAt DateTime? @default(now(), map: "DF__Cashiers__Create__5070F446") @db.DateTime
+  IsActive  Boolean?  @default(false, map: "DF__Cashiers__IsActi__5165187F")
+  Shifts    Shifts[]
+}
+
+model Categories {
+  Id    String  @id(map: "PK__Categori__3214EC0709DB8384") @default(dbgenerated("newid()"), map: "DF__Categories__Id__37A5467C") @db.UniqueIdentifier
+  Name  String? @default("Sin asignar", map: "DF__Categories__Name__38996AB5") @db.NVarChar(80)
+  Items Items[]
+}
+
+model Employees {
+  Id                                           String        @id(map: "PK__Employee__3214EC075C6E0FF9") @default(dbgenerated("newid()"), map: "DF__Employees__Id__5BE2A6F2") @db.UniqueIdentifier
+  Name                                         String        @db.NVarChar(55)
+  LastName                                     String        @db.NVarChar(55)
+  Phone                                        String        @db.NVarChar(12)
+  IsActive                                     Boolean?      @default(true, map: "DF__Employees__IsAct__5CD6CB2B")
+  DUI                                          String?       @db.NVarChar(10)
+  NIT                                          String?       @db.NVarChar(14)
+  OrderHeader_OrderHeader_CreatedByToEmployees OrderHeader[] @relation("OrderHeader_CreatedByToEmployees")
+  OrderHeader_OrderHeader_UpdatedByToEmployees OrderHeader[] @relation("OrderHeader_UpdatedByToEmployees")
+}
+
+model Items {
+  Id          String        @id(map: "PK__Items__3214EC076ACE8FE7") @default(dbgenerated("newid()"), map: "DF__Items__Id__440B1D61") @db.UniqueIdentifier
+  CategoryId  String?       @db.UniqueIdentifier
+  ProviderId  String?       @db.UniqueIdentifier
+  Barcode     String?       @default("0", map: "DF__Items__Barcode__44FF419A") @db.NVarChar(50)
+  ItemCode    String?       @default("0", map: "DF__Items__ItemCode__45F365D3") @db.NVarChar(4)
+  Description String?       @default("", map: "DF__Items__Descripti__46E78A0C") @db.NVarChar(250)
+  BuyPrice    Decimal?      @default(0.0, map: "DF__Items__BuyPrice__47DBAE45") @db.Decimal(6, 2)
+  SalePrice   Decimal?      @default(0.0, map: "DF__Items__SalePrice__48CFD27E") @db.Decimal(6, 2)
+  IsActive    Boolean?      @default(true, map: "DF__Items__IsActive__49C3F6B7")
+  CreatedAt   DateTime?     @default(now(), map: "DF__Items__CreatedAt__4AB81AF0") @db.DateTime
+  UpdatedAt   DateTime?     @db.DateTime
+  Categories  Categories?   @relation(fields: [CategoryId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Items__CategoryI__4BAC3F29")
+  Providers   Providers?    @relation(fields: [ProviderId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Items__ProviderI__4CA06362")
+  OrderDetail OrderDetail[]
+}
+
+model OrderDetail {
+  Id            String      @id(map: "PK__OrderDet__3214EC07B0BA83A1") @default(dbgenerated("newid()"), map: "DF__OrderDetail__Id__6EF57B66") @db.UniqueIdentifier
+  OrderHeaderId String      @db.UniqueIdentifier
+  ItemId        String      @db.UniqueIdentifier
+  Quantity      Int?        @default(0, map: "DF__OrderDeta__Quant__6FE99F9F")
+  SubTotal      Decimal?    @db.Decimal(6, 2)
+  Items         Items       @relation(fields: [ItemId], references: [Id], onUpdate: NoAction, map: "FK__OrderDeta__ItemI__71D1E811")
+  OrderHeader   OrderHeader @relation(fields: [OrderHeaderId], references: [Id], onUpdate: NoAction, map: "FK__OrderDeta__Order__70DDC3D8")
+}
+
+model OrderHeader {
+  Id                                         String           @id(map: "PK__OrderHea__3214EC078AAADF2E") @default(dbgenerated("newid()"), map: "DF__OrderHeader__Id__6383C8BA") @db.UniqueIdentifier
+  SubTotal                                   Decimal          @db.Decimal(10, 2)
+  Total                                      Decimal          @db.Decimal(10, 2)
+  CreatedAt                                  DateTime?        @default(now(), map: "DF__OrderHead__Creat__6477ECF3") @db.DateTime
+  UpdatedAt                                  DateTime?        @db.DateTime
+  UpdatedBy                                  String?          @db.UniqueIdentifier
+  CreatedBy                                  String           @db.UniqueIdentifier
+  TableId                                    String?          @db.UniqueIdentifier
+  OrderDetail                                OrderDetail[]
+  Employees_OrderHeader_CreatedByToEmployees Employees        @relation("OrderHeader_CreatedByToEmployees", fields: [CreatedBy], references: [Id], onUpdate: NoAction, map: "FK__OrderHead__Creat__656C112C")
+  RestaurantTable                            RestaurantTable? @relation(fields: [TableId], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK__OrderHead__Table__6754599E")
+  Employees_OrderHeader_UpdatedByToEmployees Employees?       @relation("OrderHeader_UpdatedByToEmployees", fields: [UpdatedBy], references: [Id], onDelete: NoAction, onUpdate: NoAction, map: "FK__OrderHead__Updat__66603565")
+  Transactions                               Transactions[]
+}
+
+model Providers {
+  Id           String   @id(map: "PK__Provider__3214EC078B07D44B") @default(dbgenerated("newid()"), map: "DF__Providers__Id__3B75D760") @db.UniqueIdentifier
+  SocialReason String?  @default("Sin asignar", map: "DF__Providers__Socia__3C69FB99") @db.NVarChar(150)
+  Phone        String?  @default("+503 0000-0000", map: "DF__Providers__Phone__3D5E1FD2") @db.NVarChar(11)
+  NRC          String?  @default("00000000", map: "DF__Providers__NRC__3E52440B") @db.NVarChar(8)
+  NIT          String?  @default("XXXXXXXXXXXXXX", map: "DF__Providers__NIT__3F466844") @db.NVarChar(14)
+  Industry     String?  @default("Sin asignar", map: "DF__Providers__Indus__403A8C7D") @db.NVarChar(150)
+  Email        String?  @db.NVarChar(80)
+  IsActive     Boolean? @default(true, map: "DF__Providers__IsAct__412EB0B6")
+  Items        Items[]
+}
+
+model RestaurantTable {
+  Id          String        @id(map: "PK__Restaura__3214EC07713EB5F4") @default(dbgenerated("newid()"), map: "DF__RestaurantTa__Id__5FB337D6") @db.UniqueIdentifier
+  Name        String        @db.NVarChar(30)
+  Guests      Int?          @db.TinyInt
+  IsActive    Boolean?      @default(true, map: "DF__Restauran__IsAct__60A75C0F")
+  OrderHeader OrderHeader[]
+}
+
+model Shifts {
+  Id            String         @id(map: "PK__Shifts__3214EC0782A6A256") @default(dbgenerated("newid()"), map: "DF__Shifts__Id__571DF1D5") @db.UniqueIdentifier
+  CashierId     String         @db.UniqueIdentifier
+  OpenAt        DateTime       @db.DateTime
+  ClosedAt      DateTime?      @db.DateTime
+  InitialAmount Decimal        @db.Decimal(10, 2)
+  FinalAmount   Decimal?       @db.Decimal(10, 2)
+  IsOpen        Boolean?       @default(true, map: "DF__Shifts__IsOpen__5812160E")
+  Discrepancy   Decimal        @db.Decimal(10, 2)
+  Cashiers      Cashiers       @relation(fields: [CashierId], references: [Id], onUpdate: NoAction, map: "FK__Shifts__CashierI__59063A47")
+  Transactions  Transactions[]
+}
+
+model Transactions {
+  Id                String          @id(map: "PK__Transact__3214EC0790E94B2B") @default(dbgenerated("newid()"), map: "DF__Transactions__Id__6A30C649") @db.UniqueIdentifier
+  OrderHeaderId     String          @db.UniqueIdentifier
+  CreatedAt         DateTime        @db.DateTime
+  Amount            Decimal         @db.Decimal(6, 2)
+  TransactionTypeId String          @db.UniqueIdentifier
+  ShiftId           String          @db.UniqueIdentifier
+  OrderHeader       OrderHeader     @relation(fields: [OrderHeaderId], references: [Id], onUpdate: NoAction, map: "FK__Transacti__Order__6C190EBB")
+  TransactionType   TransactionType @relation(fields: [TransactionTypeId], references: [Id], onUpdate: NoAction, map: "FK__Transacti__Trans__6B24EA82")
+  Shifts            Shifts          @relation(fields: [ShiftId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "Transactions_Shifts_FK")
+}
+
+model TransactionType {
+  Id           String         @id(map: "PK__Transact__3214EC074646DCFD") @default(dbgenerated("newid()"), map: "DF__TransactionT__Id__5441852A") @db.UniqueIdentifier
+  Name         String         @db.NVarChar(35)
+  Transactions Transactions[]
 }
