@@ -35,7 +35,7 @@ export default function ProvidersList() {
                                 <Checkbox disabled checked={it.IsActive ?? false} />
                             </TableCell>
                             <TableCell className='flex items-center space-x-3'>
-                                <EditProviderDialog provider={it} onSubmit={() => {}}/>
+                                <EditProviderDialog provider={it} onUpdated={()=>{}}/>
                                 <Button size='icon' variant='destructive'>
                                     <Trash2 />
                                 </Button>
