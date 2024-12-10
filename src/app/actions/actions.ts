@@ -17,3 +17,17 @@ export async function UpdateProvider(provider:Providers) {
         data: provider
     });
 }
+
+export async function CreateProvider(provider:Omit<Providers,'Id' | 'IsActive'>) {
+    return await prisma.providers.create({
+        data: provider
+    });
+}
+
+export async function DeleteProvider(id:string) {
+    return await prisma.providers.delete({
+        where:{
+            Id: id
+        }
+    });
+}

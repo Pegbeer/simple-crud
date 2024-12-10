@@ -13,10 +13,10 @@ import { UpdateProvider } from "../actions/actions";
 
 interface Props {
     provider: Providers,
-    onUpdated: () => void;
+    onUpdated: (provider:Providers) => void;
 }
 
-export default function EditProviderDialog({ provider }: Props) {
+export default function EditProviderDialog({ provider, onUpdated }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [socialReason, setSocialReason] = useState(provider.SocialReason ?? '');
     const [phone, setPhone] = useState(provider.Phone ?? '');
@@ -33,7 +33,7 @@ export default function EditProviderDialog({ provider }: Props) {
             provider.NIT = nit,
             provider.NRC = nrc;
             provider.Industry = industry;
-            await UpdateProvider(provider);
+            onUpdated(provider);
         } catch (error) {
             console.log(error);
         }

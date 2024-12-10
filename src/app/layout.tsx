@@ -5,16 +5,10 @@ import { Provider } from "react-redux";
 import store from "@/store";
 import StoreProvider from "./components/StoreProvider";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+import {  Inter,Montserrat  } from 'next/font/google';
+
+const inter = Inter({subsets:['latin']});
+const montserrat = Montserrat({subsets:['latin']})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -29,7 +23,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${montserrat.className} antialiased`}
       >
         <StoreProvider>
           {children}
